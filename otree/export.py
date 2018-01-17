@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from otree.common import Currency
-from django.db.models import BinaryField
+from django.db.models import BinaryField, ForeignKey
 import sys
 import datetime
 import inspect
@@ -35,8 +35,15 @@ def inspect_field_names(Model):
 
     # I tried .get_fields() instead of .fields, but that method returns
     # fields that cause problems, like saying group has an attribute 'player'
-    return [f.name for f in Model._meta.fields
-            if not isinstance(f, BinaryField)]
+    field_names = []
+    for f in Model._meta.fields:
+        if not isinstance(f, BinaryField):
+            if isinstance(f, ForeignKey):
+                field_names.append('{}_id'.format(f.name))
+            else:
+                field_names.append(f.name)
+
+    return field_names
 
 
 def get_field_names_for_live_update(Model):
